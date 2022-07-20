@@ -1,10 +1,11 @@
 {
   "name": "typeorm-auditing",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "TypeORM Auditing: Create history tables and manage changes of entity automatically.",
-  "main": "index.ts",
+  "main": "dist/auditing-entity.decorator.js",
+  "types": "dist/auditing-entity.decorator.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "publish": "tsc && npm publish --access public"
   },
   "keywords": [
     "TypeORM",
