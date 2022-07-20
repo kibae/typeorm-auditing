@@ -1,6 +1,6 @@
 {
   "name": "typeorm-auditing",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "TypeORM Auditing: Create history tables and manage changes of entity automatically.",
   "main": "dist/auditing-entity.decorator.js",
   "types": "dist/auditing-entity.decorator.d.ts",
