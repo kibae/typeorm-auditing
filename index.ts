@@ -1,0 +1,1 @@
+export * from './src/decorator/auditing-entity.decorator';
