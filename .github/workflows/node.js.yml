@@ -29,10 +29,8 @@ jobs:
     - run: npm ci
     - run: npm run build
     - run: npm test
-    - name: Test Reporting
-      uses: phoenix-actions/test-reporting@v8
-      id: test-report
+    - uses: actions/upload-artifact@v3
+      if: success() || failure()
       with:
-        name: JEST Tests
+        name: test-results
         path: junit.xml
-        reporter: jest-junit
