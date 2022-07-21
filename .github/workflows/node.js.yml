@@ -31,4 +31,8 @@ jobs:
     - run: npm test
     - name: Test Reporting
       uses: phoenix-actions/test-reporting@v8
-
+      id: test-report
+      with:
+        name: JEST Tests
+        path: junit.xml
+        reporter: jest-junit
