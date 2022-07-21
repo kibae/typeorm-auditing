@@ -12,6 +12,7 @@ import {
     UpdateEvent
 } from 'typeorm';
 import { EntityOptions } from 'typeorm/decorator/options/EntityOptions';
+import { PrimaryGeneratedColumnType } from 'typeorm/driver/types/ColumnTypes';
 import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 import { TableMetadataArgs } from 'typeorm/metadata-args/TableMetadataArgs';
 import { MetadataUtils } from 'typeorm/metadata-builder/MetadataUtils';
@@ -26,6 +27,13 @@ export interface IAuditingEntity {
     readonly _seq: number;
     readonly _action: AuditingAction;
     readonly _modifiedAt: Date;
+}
+
+export interface AuditingEntityOptions extends EntityOptions {
+    /**
+     * The type of *_seq* column can be specified.
+     */
+    seqType?: PrimaryGeneratedColumnType;
 }
 
 @EventSubscriber()
@@ -71,9 +79,11 @@ abstract class HistoryDummy extends BaseEntity {
     readonly _modifiedAt!: Date;
 }
 
-export function AuditingEntity<T extends BaseEntity>(entityType: typeof BaseEntity, entityOptions?: EntityOptions) {
+export function AuditingEntity<T extends BaseEntity>(entityType: typeof BaseEntity, options?: AuditingEntityOptions) {
     return (target: Function) => {
-        entityOptions = entityOptions || {};
+        options = options || {};
+
+        const { seqType, ...entityOptions } = options;
 
         const metadata = getMetadataArgsStorage();
         const origin = metadata.tables.find((table) => table.target === entityType);
@@ -143,7 +153,7 @@ export function AuditingEntity<T extends BaseEntity>(entityType: typeof BaseEnti
                 target,
                 propertyName: '_seq',
                 mode: 'regular',
-                options: { type: 'bigint', primary: true }
+                options: { type: seqType || 'bigint', primary: true },
             });
             metadata.generations.push({ target, propertyName: '_seq', strategy: 'increment' });
 
@@ -157,6 +167,17 @@ export function AuditingEntity<T extends BaseEntity>(entityType: typeof BaseEnti
 
             //_modifiedAt
             metadata.columns.push({ target, propertyName: '_modifiedAt', mode: 'createDate', options: {} });
+        } else if (seqType && seqType !== 'bigint') {
+            //The type of *_seq* column can be specified.
+
+            //_seq
+            metadata.columns.unshift({
+                target,
+                propertyName: '_seq',
+                mode: 'regular',
+                options: { type: seqType, primary: true },
+            });
+            metadata.generations.push({ target, propertyName: '_seq', strategy: 'increment' });
         }
 
         //entityListeners
