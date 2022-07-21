@@ -9,7 +9,7 @@ import {
     PrimaryGeneratedColumn,
     RemoveEvent,
     SoftRemoveEvent,
-    UpdateEvent
+    UpdateEvent,
 } from 'typeorm';
 import { EntityOptions } from 'typeorm/decorator/options/EntityOptions';
 import { PrimaryGeneratedColumnType } from 'typeorm/driver/types/ColumnTypes';
@@ -68,7 +68,7 @@ export class AuditingSubscriber implements EntitySubscriberInterface {
     }
 }
 
-abstract class HistoryDummy extends BaseEntity {
+export abstract class AbstractAuditingBaseEntity extends BaseEntity {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     readonly _seq!: number;
 
@@ -107,7 +107,7 @@ export function AuditingEntity<T extends BaseEntity>(entityType: typeof BaseEnti
             database: entityOptions.database || origin.database,
             schema: entityOptions.schema || origin.schema,
             synchronize: entityOptions.synchronize || origin.synchronize,
-            withoutRowid: entityOptions.withoutRowid
+            withoutRowid: entityOptions.withoutRowid,
         } as TableMetadataArgs);
 
         const inheritanceTree = MetadataUtils.getInheritanceTree(origin.target as Function);
@@ -117,7 +117,7 @@ export function AuditingEntity<T extends BaseEntity>(entityType: typeof BaseEnti
             .filter((column) => inheritanceTree.includes(column.target as Function))
             .map((originColumn) => {
                 const { type, length, array, hstoreType, enumName, precision, scale, zerofill, comment, primary } =
-                originColumn.options || {};
+                    originColumn.options || {};
                 if (primary) pkList.push(originColumn.propertyName);
 
                 metadata.columns.push({
@@ -134,8 +134,8 @@ export function AuditingEntity<T extends BaseEntity>(entityType: typeof BaseEnti
                         precision,
                         scale,
                         zerofill,
-                        comment
-                    }
+                        comment,
+                    },
                 });
             });
 
@@ -143,7 +143,7 @@ export function AuditingEntity<T extends BaseEntity>(entityType: typeof BaseEnti
         if (pkList.length > 0)
             metadata.indices.push({
                 target,
-                columns: pkList
+                columns: pkList,
             });
 
         //If the dummy class is not inherited, columns for history should be created.
@@ -162,7 +162,7 @@ export function AuditingEntity<T extends BaseEntity>(entityType: typeof BaseEnti
                 target,
                 propertyName: '_action',
                 mode: 'regular',
-                options: { type: 'varchar', length: 20 }
+                options: { type: 'varchar', length: 20 },
             });
 
             //_modifiedAt
