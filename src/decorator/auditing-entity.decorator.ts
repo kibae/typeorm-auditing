@@ -80,12 +80,10 @@ export function AuditingEntity<T extends BaseEntity>(entityType: typeof BaseEnti
         if (!origin) throw new Error('AuditingEntity: Cannot found origin entity from TypeORM metadata.');
         if (origin.type !== 'regular') throw new Error('AuditingEntity: Origin entity must be a regular entity type.');
 
-        const inheritanceTree = MetadataUtils.getInheritanceTree(origin.target as Function);
-
         let dummyInherited = false;
-        if (inheritanceTree.includes(origin.target as Function)) {
+        if (MetadataUtils.getInheritanceTree(target).includes(origin.target as Function)) {
             //Break inheritance. Avoid inheritance of index and event definitions
-            Object.setPrototypeOf(target, HistoryDummy);
+            Object.setPrototypeOf(target, AbstractAuditingBaseEntity);
             dummyInherited = true;
         }
 
@@ -102,6 +100,7 @@ export function AuditingEntity<T extends BaseEntity>(entityType: typeof BaseEnti
             withoutRowid: entityOptions.withoutRowid
         } as TableMetadataArgs);
 
+        const inheritanceTree = MetadataUtils.getInheritanceTree(origin.target as Function);
         const pkList: string[] = [];
         //import columns of origin table
         metadata.columns
