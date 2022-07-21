@@ -1,6 +1,10 @@
 # TypeORM Auditing(Decorator)
 - Create history tables and manage changes of entity automatically
 
+![](https://github.com/kibae/typeorm-auditing/actions/workflows/node.js.yml/badge.svg?branch=main)
+![](https://badge.fury.io/js/typeorm-auditing.svg)
+![](https://img.shields.io/github/license/kibae/typeorm-auditing)
+
 ## Install
 - NPM
 ```shell

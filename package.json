@@ -26,6 +26,7 @@
   "devDependencies": {
     "@types/jest": "^28.1.6",
     "jest": "^28.1.3",
+    "jest-junit": "^14.0.0",
     "prettier": "^2.7.1",
     "sqlite3": "^5.0.9",
     "ts-jest": "^28.0.7",
@@ -56,6 +57,7 @@
     "testEnvironment": "node",
     "roots": [
       "<rootDir>/src/"
-    ]
+    ],
+    "reporters": [ "default", "jest-junit" ]
   }
 }
