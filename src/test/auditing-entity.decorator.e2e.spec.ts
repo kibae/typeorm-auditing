@@ -14,11 +14,13 @@ describe('AuditingEntity - E2E', () => {
             subscribers: [AuditingSubscriber],
         }).initialize();
 
-        const entity = new Case1();
-        entity.firstName = 'Timber';
-        entity.lastName = 'Saw';
-        entity.age = 25;
-        await dataSource.manager.save(entity);
+        const entity = await dataSource.manager.save(
+            Case1.create({
+                firstName: 'Timber',
+                lastName: 'Saw',
+                age: 25,
+            })
+        );
         expect(entity).toBeDefined();
 
         //Create
@@ -30,7 +32,7 @@ describe('AuditingEntity - E2E', () => {
 
         //Update
         entity.age++;
-        await dataSource.manager.save(entity);
+        await entity.save();
 
         const updated = await dataSource.manager.find(Case1Audit, { where: { _action: AuditingAction.Update } });
         expect(updated).toBeDefined();
@@ -39,7 +41,7 @@ describe('AuditingEntity - E2E', () => {
         expect(updated[0].id === entity.id).toBeDefined();
 
         //Delete
-        await dataSource.manager.remove(entity);
+        await entity.remove();
         const deleted = await dataSource.manager.find(Case1Audit, { where: { _action: AuditingAction.Delete } });
         expect(deleted).toBeDefined();
         expect(deleted.length > 0).toBeDefined();
@@ -47,7 +49,7 @@ describe('AuditingEntity - E2E', () => {
         expect(deleted[0].id === entity.id).toBeDefined();
     });
 
-    it('Case2(Not inherited + Partial) - CUD', async () => {
+    it('Case2(Not inherited + ObjectLiteral + Partial) - CUD', async () => {
         const dataSource = await new DataSource({
             type: 'sqlite',
             database: ':memory:',
@@ -57,13 +59,12 @@ describe('AuditingEntity - E2E', () => {
             subscribers: [AuditingSubscriber],
         }).initialize();
 
-        const entity = await dataSource.manager.save(
-            Case2.create({
-                firstName: 'Timber',
-                lastName: 'Saw',
-                age: 25,
-            })
-        );
+        const entity = new Case2();
+        entity.firstName = 'Timber';
+        entity.lastName = 'Saw';
+        entity.age = 25;
+
+        await dataSource.manager.save(entity);
         expect(entity).toBeDefined();
 
         //Create
@@ -75,7 +76,7 @@ describe('AuditingEntity - E2E', () => {
 
         //Update
         entity.age++;
-        await entity.save();
+        await dataSource.manager.save(entity);
 
         const updated = await dataSource.manager.find(Case2Audit, { where: { _action: AuditingAction.Update } });
         expect(updated).toBeDefined();
@@ -84,11 +85,52 @@ describe('AuditingEntity - E2E', () => {
         expect(updated[0].id === entity.id).toBeDefined();
 
         //Delete
-        await entity.remove();
+        await dataSource.manager.remove(entity);
         const deleted = await dataSource.manager.find(Case2Audit, { where: { _action: AuditingAction.Delete } });
         expect(deleted).toBeDefined();
         expect(deleted.length > 0).toBeDefined();
         expect(deleted[0]._action === AuditingAction.Update).toBeDefined();
         expect(deleted[0].id === entity.id).toBeDefined();
+    });
+
+    it('Case3(Not inherited + ObjectLiteral + Partial) - ObjectLiteral', async () => {
+        const dataSource = await new DataSource({
+            type: 'sqlite',
+            database: ':memory:',
+            synchronize: true,
+            logging: 'all',
+            entities: [Case2, Case2Audit],
+            subscribers: [AuditingSubscriber],
+        }).initialize();
+
+        const entities = await dataSource.getRepository(Case2).save([
+            {
+                firstName: 'Timber',
+                lastName: 'Saw',
+                age: 25,
+            },
+            {
+                firstName: 'Timber',
+                lastName: 'Saw',
+                age: 26,
+            },
+            {
+                firstName: 'Timber',
+                lastName: 'Saw',
+                age: 27,
+            },
+        ]);
+        expect(entities).toBeDefined();
+        console.log(entities);
+
+        //Create
+        const created = await dataSource.manager.find(Case2Audit);
+        console.log(created);
+        expect(created).toBeDefined();
+        expect(created.length > 0).toBeDefined();
+        expect(created[0]._action === AuditingAction.Create).toBeDefined();
+        expect(created[0].id === entities[0].id).toBeDefined();
+        expect(created[1].id === entities[1].id).toBeDefined();
+        expect(created[2].id === entities[2].id).toBeDefined();
     });
 });
