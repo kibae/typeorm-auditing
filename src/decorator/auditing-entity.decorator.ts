@@ -1,11 +1,11 @@
 import {
-    BaseEntity,
     Column,
     CreateDateColumn,
     EntitySubscriberInterface,
     EventSubscriber,
     getMetadataArgsStorage,
     InsertEvent,
+    ObjectLiteral,
     PrimaryGeneratedColumn,
     RemoveEvent,
     SoftRemoveEvent,
@@ -68,7 +68,7 @@ export class AuditingSubscriber implements EntitySubscriberInterface {
     }
 }
 
-export abstract class AbstractAuditingBaseEntity extends BaseEntity {
+export abstract class AbstractAuditingBaseEntity {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     readonly _seq!: number;
 
@@ -79,7 +79,7 @@ export abstract class AbstractAuditingBaseEntity extends BaseEntity {
     readonly _modifiedAt!: Date;
 }
 
-export function AuditingEntity<T extends BaseEntity>(entityType: typeof BaseEntity, options?: AuditingEntityOptions) {
+export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLiteral, options?: AuditingEntityOptions) {
     return (target: Function) => {
         options = options || {};
 

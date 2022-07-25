@@ -14,13 +14,11 @@ describe('AuditingEntity - E2E', () => {
             subscribers: [AuditingSubscriber],
         }).initialize();
 
-        const entity = await dataSource.manager.save(
-            Case1.create({
-                firstName: 'Timber',
-                lastName: 'Saw',
-                age: 25,
-            })
-        );
+        const entity = new Case1();
+        entity.firstName = 'Timber';
+        entity.lastName = 'Saw';
+        entity.age = 25;
+        await dataSource.manager.save(entity);
         expect(entity).toBeDefined();
 
         //Create
@@ -32,7 +30,7 @@ describe('AuditingEntity - E2E', () => {
 
         //Update
         entity.age++;
-        await entity.save();
+        await dataSource.manager.save(entity);
 
         const updated = await dataSource.manager.find(Case1Audit, { where: { _action: AuditingAction.Update } });
         expect(updated).toBeDefined();
@@ -41,7 +39,7 @@ describe('AuditingEntity - E2E', () => {
         expect(updated[0].id === entity.id).toBeDefined();
 
         //Delete
-        await entity.remove();
+        await dataSource.manager.remove(entity);
         const deleted = await dataSource.manager.find(Case1Audit, { where: { _action: AuditingAction.Delete } });
         expect(deleted).toBeDefined();
         expect(deleted.length > 0).toBeDefined();

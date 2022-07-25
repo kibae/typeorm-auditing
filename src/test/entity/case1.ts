@@ -1,7 +1,7 @@
 import { AfterLoad, BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 import { AuditingAction, AuditingEntity, IAuditingEntity } from '../../decorator/auditing-entity.decorator';
 
-abstract class MyBase1 extends BaseEntity {
+abstract class MyBase1 {
     @PrimaryGeneratedColumn({ type: 'int' })
     id!: number;
 }
