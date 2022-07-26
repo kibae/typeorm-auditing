@@ -58,7 +58,7 @@ export class AuditingUser extends User implements IAuditingEntity {
     readonly _action: AuditingAction;
     readonly _modifiedAt: Date;
 
-    // 일반적인 entity처럼 컬럼을 추가하고 인덱스도 설정할 수 있습니다. 보통은 자동으로 생성되기 때문에 nullable이거나 @BeforeInsert를 활용하여 내용을 채워줘야 합니다.
+    // 일반적인 entity처럼 컬럼을 추가하고 인덱스도 설정할 수 있습니다. 일반적으로는 TypeORM event를 통해 자동으로 레코드가 생성되기 때문에 nullable이거나 @BeforeInsert를 활용하여 내용을 채워줘야 합니다.
     // @Column({ nullable: true })
     // additionalColumn!: string;
 }
