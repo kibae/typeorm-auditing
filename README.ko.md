@@ -1,5 +1,5 @@
 # TypeORM Auditing(Decorator)
-- Entity의 변화(Create, Update, Delete)를 자동으로 히스토리 테이블를 만들고 적재합니다.
+- Entity의 변화(Create, Update, Delete)를 자동으로 구성된 히스토리 테이블에 적재합니다.
 
 [![Node.js CI](https://github.com/kibae/typeorm-auditing/actions/workflows/node.js.yml/badge.svg)](https://github.com/kibae/typeorm-auditing/actions/workflows/node.js.yml)
 [![NPM Version](https://badge.fury.io/js/typeorm-auditing.svg)](https://www.npmjs.com/package/typeorm-auditing)
