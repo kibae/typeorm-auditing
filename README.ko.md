@@ -1,5 +1,5 @@
 # TypeORM Auditing(Decorator)
-- Create history tables and manage changes of entity automatically
+- Entity의 변화(Create, Update, Delete)를 자동으로 히스토리 테이블를 만들고 적재합니다.
 
 [![Node.js CI](https://github.com/kibae/typeorm-auditing/actions/workflows/node.js.yml/badge.svg)](https://github.com/kibae/typeorm-auditing/actions/workflows/node.js.yml)
 [![NPM Version](https://badge.fury.io/js/typeorm-auditing.svg)](https://www.npmjs.com/package/typeorm-auditing)
@@ -19,8 +19,8 @@ $ yarn add typeorm-auditing
 ----
 
 ## Usage
-### 0. Origin entity *(You don't need to change your existing code)*
-- This is a general entity definition. You don't need to change your existing code to add auditing feature.
+### 0. Origin entity *(기존 코드를 바꿀 필요가 없습니다)*
+- 기존의 entity 정의를 그대로 활용할 수 있습니다.
 ```typescript
 export abstract class MyBase extends BaseEntity {
     @PrimaryGeneratedColumn()
@@ -44,9 +44,10 @@ export class User extends MyBase {
 ```
 
 ### 1. Auditing Entity
-- Define a history entity to store the changes of User entities.
-  - *In order to easily define columns, extended the User entity.*
-- **@AuditingEntity(*TargetEntity*)** decorator automatically creates a table with **_seq**, **_action(*Create, Update, Delete*)** and **_modifiedAt** columns.
+- 일반적인 entity를 정의하듯이 히스토리가 적재될 테이블을 정의할 수 있습니다.
+  - 이 예제는 편의를 위해 origin entity를 상속했습니다. Origin을 상속하지 않고 별도(TypeORM.ObjectLiteral)로 entity를 구성해도 됩니다.
+  - @Entity decorator 대신 **@AuditingEntity(*TargetEntity*)** decorator를 사용합니다.
+  - 자동으로 **_seq**, **_action(*Create, Update, Delete*)**, **_modifiedAt** 컬럼을 추가됩니다. public getter를 정의하여 원하는 이름으로 활용할 수 있습니다.  
 ```typescript
 import { AuditingAction, AuditingEntity, IAuditingEntity } from 'typeorm-auditing'; 
 
@@ -57,15 +58,14 @@ export class AuditingUser extends User implements IAuditingEntity {
     readonly _action: AuditingAction;
     readonly _modifiedAt: Date;
 
-    // Additional columns can be added. That columns must be nullable or a value must be entered via @BeforeInsert.
+    // 일반적인 entity처럼 컬럼을 추가하고 인덱스도 설정할 수 있습니다. 보통은 자동으로 생성되기 때문에 nullable이거나 @BeforeInsert를 활용하여 내용을 채워줘야 합니다.
     // @Column({ nullable: true })
     // additionalColumn!: string;
 }
 ```
 
 ### 2. Subscribe TypeORM event
-- You only need to configure it once for multiple entities.
-- However, if there are multiple data sources, you need to set them up for each data source.
+- TypeORM DataSource마다 subscribers를 설정해야 합니다. 하나의 DataSource에 한 번만 설정하면 되지만, 여러 DataSource가 정의된다면 각각 설정해 주세요.
 ```typescript
 import { AuditingSubscriber } from 'typeorm-auditing';
 
