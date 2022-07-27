@@ -48,11 +48,11 @@ export class User extends MyBase {
   - *In order to easily define columns, extended the User entity.*
 - **@AuditingEntity(*TargetEntity*)** decorator automatically creates a table with **_seq**, **_action(*Create, Update, Delete*)** and **_modifiedAt** columns.
 ```typescript
-import { AuditingAction, AuditingEntity, IAuditingEntity } from 'typeorm-auditing'; 
+import { AuditingAction, AuditingEntity, AuditingEntityDefaultColumns } from 'typeorm-auditing'; 
 
 @AuditingEntity(User)
 // @AuditingEntity(User, { ...overrideUserEntitiesEntityOption, database: 'my-database', schema: 'my-schema' })
-export class AuditingUser extends User implements IAuditingEntity {
+export class AuditingUser extends User implements AuditingEntityDefaultColumns {
     readonly _seq: number;
     readonly _action: AuditingAction;
     readonly _modifiedAt: Date;
@@ -149,10 +149,10 @@ export class Case1 extends BaseEntity {
 
 - Audit Entity
 ```typescript
-import { AuditingAction, AuditingEntity, IAuditingEntity } from 'typeorm-auditing';
+import { AuditingAction, AuditingEntity, AuditingEntityDefaultColumns } from 'typeorm-auditing';
 
 @AuditingEntity(Case1)
-export class Case1Audit extends Case1 implements IAuditingEntity {
+export class Case1Audit extends Case1 implements AuditingEntityDefaultColumns {
     readonly _seq!: number;
     readonly _action!: AuditingAction;
     readonly _modifiedAt!: Date;

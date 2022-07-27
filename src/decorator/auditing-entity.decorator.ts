@@ -23,11 +23,16 @@ export enum AuditingAction {
     Delete = 'Delete',
 }
 
-export interface IAuditingEntity {
+export interface AuditingEntityDefaultColumns {
     readonly _seq: number;
     readonly _action: AuditingAction;
     readonly _modifiedAt: Date;
 }
+
+/**
+ * @deprecated Use AuditingEntityDefaultColumns instead of IAuditingEntity.
+ */
+export interface IAuditingEntity extends AuditingEntityDefaultColumns {}
 
 export interface AuditingEntityOptions extends EntityOptions {
     /**
@@ -68,7 +73,7 @@ export class AuditingSubscriber implements EntitySubscriberInterface {
     }
 }
 
-export abstract class AbstractAuditingBaseEntity {
+export abstract class AbstractAuditingBaseEntity implements AuditingEntityDefaultColumns {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     readonly _seq!: number;
 

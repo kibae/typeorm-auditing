@@ -1,5 +1,5 @@
 import { AfterLoad, BaseEntity, Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
-import { AuditingAction, AuditingEntity, IAuditingEntity } from '../../decorator/auditing-entity.decorator';
+import { AuditingAction, AuditingEntity, AuditingEntityDefaultColumns } from '../../decorator/auditing-entity.decorator';
 
 abstract class MyBase1 {
     @PrimaryGeneratedColumn()
@@ -36,7 +36,7 @@ export class Case2 extends MyBase1 {
     //Set type to int for sqlite e2e test
     seqType: 'int',
 })
-export class Case2Audit extends BaseEntity implements IAuditingEntity {
+export class Case2Audit extends BaseEntity implements AuditingEntityDefaultColumns {
     readonly _seq!: number;
     readonly _action!: AuditingAction;
     readonly _modifiedAt!: Date;

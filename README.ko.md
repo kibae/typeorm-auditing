@@ -49,11 +49,11 @@ export class User extends MyBase {
   - @Entity decorator 대신 **@AuditingEntity(*TargetEntity*)** decorator를 사용합니다.
   - 자동으로 **_seq**, **_action(*Create, Update, Delete*)**, **_modifiedAt** 컬럼을 추가됩니다. public getter를 정의하여 원하는 이름으로 활용할 수 있습니다.  
 ```typescript
-import { AuditingAction, AuditingEntity, IAuditingEntity } from 'typeorm-auditing'; 
+import { AuditingAction, AuditingEntity, AuditingEntityDefaultColumns } from 'typeorm-auditing'; 
 
 @AuditingEntity(User)
 // @AuditingEntity(User, { ...overrideUserEntitiesEntityOption, database: 'my-database', schema: 'my-schema' })
-export class AuditingUser extends User implements IAuditingEntity {
+export class AuditingUser extends User implements AuditingEntityDefaultColumns {
     readonly _seq: number;
     readonly _action: AuditingAction;
     readonly _modifiedAt: Date;
@@ -149,10 +149,10 @@ export class Case1 extends BaseEntity {
 
 - Audit Entity
 ```typescript
-import { AuditingAction, AuditingEntity, IAuditingEntity } from 'typeorm-auditing';
+import { AuditingAction, AuditingEntity, AuditingEntityDefaultColumns } from 'typeorm-auditing';
 
 @AuditingEntity(Case1)
-export class Case1Audit extends Case1 implements IAuditingEntity {
+export class Case1Audit extends Case1 implements AuditingEntityDefaultColumns {
     readonly _seq!: number;
     readonly _action!: AuditingAction;
     readonly _modifiedAt!: Date;
