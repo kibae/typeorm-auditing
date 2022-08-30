@@ -1,21 +1,10 @@
-import {
-    Column,
-    CreateDateColumn,
-    EntitySubscriberInterface,
-    EventSubscriber,
-    getMetadataArgsStorage,
-    InsertEvent,
-    ObjectLiteral,
-    PrimaryGeneratedColumn,
-    RemoveEvent,
-    SoftRemoveEvent,
-    UpdateEvent,
-} from 'typeorm';
+import { Column, CreateDateColumn, getMetadataArgsStorage, ObjectLiteral, PrimaryGeneratedColumn } from 'typeorm';
 import { EntityOptions } from 'typeorm/decorator/options/EntityOptions';
 import { PrimaryGeneratedColumnType } from 'typeorm/driver/types/ColumnTypes';
-import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 import { TableMetadataArgs } from 'typeorm/metadata-args/TableMetadataArgs';
 import { MetadataUtils } from 'typeorm/metadata-builder/MetadataUtils';
+import { AuditingSubscriber } from '../auditing-subscriber';
+import { ColumnMode } from 'typeorm/metadata-args/types/ColumnMode';
 
 export enum AuditingAction {
     Create = 'Create',
@@ -39,38 +28,6 @@ export interface AuditingEntityOptions extends EntityOptions {
      * The type of *_seq* column can be specified.
      */
     seqType?: PrimaryGeneratedColumnType;
-}
-
-@EventSubscriber()
-export class AuditingSubscriber implements EntitySubscriberInterface {
-    private static subscribers: Array<{ origin: Function; target: Function }> = [];
-
-    static Subscribe(origin: Function, target: Function) {
-        AuditingSubscriber.subscribers.push({ origin, target });
-    }
-
-    private async saveHistory(entityType: Function | string, manager: EntityManager, entity: any, action: AuditingAction): Promise<any> {
-        const target = AuditingSubscriber.subscribers.find((item) => item.origin === entityType)?.target;
-        if (!target) return;
-
-        await manager.save(target, { ...entity, _action: action });
-    }
-
-    async afterInsert(event: InsertEvent<any>): Promise<any> {
-        return this.saveHistory(event.metadata.target, event.manager, event.entity, AuditingAction.Create);
-    }
-
-    async afterUpdate(event: UpdateEvent<any>): Promise<any> {
-        return this.saveHistory(event.metadata.target, event.manager, event.entity, AuditingAction.Update);
-    }
-
-    async afterRemove(event: RemoveEvent<any>): Promise<any> {
-        return this.saveHistory(event.metadata.target, event.manager, event.databaseEntity, AuditingAction.Delete);
-    }
-
-    async afterSoftRemove(event: SoftRemoveEvent<any>): Promise<any> {
-        return this.afterRemove(event);
-    }
 }
 
 export abstract class AbstractAuditingBaseEntity implements AuditingEntityDefaultColumns {
@@ -117,18 +74,25 @@ export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLitera
 
         const inheritanceTree = MetadataUtils.getInheritanceTree(origin.target as Function);
         const pkList: string[] = [];
+
         //import columns of origin table
         metadata.columns
             .filter((column) => inheritanceTree.includes(column.target as Function))
             .map((originColumn) => {
-                const { type, length, array, hstoreType, enumName, precision, scale, zerofill, comment, primary } =
-                    originColumn.options || {};
+                let { type, array } = originColumn.options;
+                const { length, hstoreType, enumName, precision, scale, zerofill, comment, primary } = originColumn.options || {};
                 if (primary) pkList.push(originColumn.propertyName);
+
+                if (!type) {
+                    if ((['createDate', 'updateDate', 'deleteDate'] as ColumnMode[]).includes(originColumn.mode)) type = Date;
+                    else if (originColumn.mode === 'virtual') type = String;
+                }
+                if (!array && originColumn.mode === 'array') array = true;
 
                 metadata.columns.push({
                     target,
                     propertyName: originColumn.propertyName,
-                    mode: 'regular',
+                    mode: originColumn.mode === 'array' ? 'array' : 'regular',
                     options: {
                         nullable: true,
                         type,
