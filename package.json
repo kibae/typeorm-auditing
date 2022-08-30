@@ -1,6 +1,6 @@
 {
   "name": "typeorm-auditing",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "TypeORM Auditing: Create history tables and manage changes of entity automatically.",
   "homepage": "https://github.com/kibae/typeorm-auditing",
   "repository": {
