@@ -1,7 +1,7 @@
 import { AuditingAction } from '../decorator/auditing-entity.decorator';
 import { DataSource } from 'typeorm';
 import { Case1, Case1Audit } from './entity/case1';
-import { Case2, Case2Audit } from './entity/case2';
+import { Case2, Case2Audit, ChildCase2 } from './entity/case2';
 import { AuditingSubscriber } from '../auditing-subscriber';
 
 describe('AuditingEntity - E2E', () => {
@@ -61,7 +61,7 @@ describe('AuditingEntity - E2E', () => {
             database: ':memory:',
             synchronize: true,
             logging: 'all',
-            entities: [Case2, Case2Audit],
+            entities: [ChildCase2, Case2, Case2Audit],
             subscribers: [AuditingSubscriber],
         }).initialize();
 
@@ -105,7 +105,7 @@ describe('AuditingEntity - E2E', () => {
             database: ':memory:',
             synchronize: true,
             logging: 'all',
-            entities: [Case2, Case2Audit],
+            entities: [ChildCase2, Case2, Case2Audit],
             subscribers: [AuditingSubscriber],
         }).initialize();
 
