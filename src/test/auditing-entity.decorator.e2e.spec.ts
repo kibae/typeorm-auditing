@@ -56,6 +56,8 @@ describe('AuditingEntity - E2E', () => {
         expect(deleted.length).toBeGreaterThan(0);
         expect(deleted[0]._action === AuditingAction.Update).toBeDefined();
         expect(deleted[0].id === entity.id).toBeDefined();
+
+        await dataSource.destroy();
     });
 
     it('Case2(Not inherited + ObjectLiteral + Partial) - CUD', async () => {
@@ -103,6 +105,8 @@ describe('AuditingEntity - E2E', () => {
         expect(deleted.length).toBeGreaterThan(0);
         expect(deleted[0]._action === AuditingAction.Update).toBeDefined();
         expect(deleted[0].id === entity.id).toBeDefined();
+
+        await dataSource.destroy();
     });
 
     it('Case3(Not inherited + ObjectLiteral + Partial) - ObjectLiteral', async () => {
@@ -147,5 +151,7 @@ describe('AuditingEntity - E2E', () => {
         expect(created[0].id === entities[0].id).toBeDefined();
         expect(created[1].id === entities[1].id).toBeDefined();
         expect(created[2].id === entities[2].id).toBeDefined();
+
+        await dataSource.destroy();
     });
 });
