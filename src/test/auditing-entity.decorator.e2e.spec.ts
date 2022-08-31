@@ -7,8 +7,11 @@ import { AuditingSubscriber } from '../auditing-subscriber';
 describe('AuditingEntity - E2E', () => {
     it('Case1(Inheritance) - CUD', async () => {
         const dataSource = await new DataSource({
-            type: 'sqlite',
-            database: ':memory:',
+            type: 'mysql',
+            port: 53306,
+            database: 'playground',
+            username: 'root',
+            password: 'local',
             synchronize: true,
             logging: 'all',
             entities: [Case1, Case1Audit],
@@ -57,8 +60,11 @@ describe('AuditingEntity - E2E', () => {
 
     it('Case2(Not inherited + ObjectLiteral + Partial) - CUD', async () => {
         const dataSource = await new DataSource({
-            type: 'sqlite',
-            database: ':memory:',
+            type: 'mysql',
+            port: 53306,
+            database: 'playground',
+            username: 'root',
+            password: 'local',
             synchronize: true,
             logging: 'all',
             entities: [ChildCase2, Case2, Case2Audit],
@@ -101,8 +107,11 @@ describe('AuditingEntity - E2E', () => {
 
     it('Case3(Not inherited + ObjectLiteral + Partial) - ObjectLiteral', async () => {
         const dataSource = await new DataSource({
-            type: 'sqlite',
-            database: ':memory:',
+            type: 'mysql',
+            port: 53306,
+            database: 'playground',
+            username: 'root',
+            password: 'local',
             synchronize: true,
             logging: 'all',
             entities: [ChildCase2, Case2, Case2Audit],

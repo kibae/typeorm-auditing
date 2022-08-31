@@ -22,6 +22,12 @@ abstract class MyBase2 extends MyBase1 {
     firstName!: string;
 }
 
+enum Gender {
+    Male = 'Male',
+    Female = 'Female',
+    Diverse = 'Diverse',
+}
+
 @Entity()
 export class Case1 extends MyBase2 {
     @Column()
@@ -29,6 +35,13 @@ export class Case1 extends MyBase2 {
 
     @Column()
     age!: number;
+
+    @Column({
+        type: 'enum',
+        enum: Gender,
+        enumName: 'Gender', // Had to add this, otherwise it cant even generate the migration
+    })
+    gender!: Gender;
 
     @CreateDateColumn()
     createdAt!: Date;
