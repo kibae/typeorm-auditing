@@ -35,4 +35,8 @@ describe('AuditingEntity', () => {
         expect(getMetadataArgsStorage().indices.find((index) => index.target === Case2Audit)).toBeDefined();
         expect(getMetadataArgsStorage().generations.find((gen) => gen.target === Case2Audit && gen.propertyName === '_seq')).toBeDefined();
     });
+
+    it('Case2(Listener)', async () => {
+        expect(getMetadataArgsStorage().entityListeners.find((table) => table.target === Case2Audit)).toBeDefined();
+    });
 });

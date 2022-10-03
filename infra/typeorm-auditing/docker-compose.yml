@@ -1,0 +1,8 @@
+services:
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: local
+      MYSQL_DATABASE: playground
+    ports:
+      - "53306:3306"

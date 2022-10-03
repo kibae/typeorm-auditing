@@ -1,5 +1,15 @@
-import { EntitySubscriberInterface, EventSubscriber, InsertEvent, RemoveEvent, SoftRemoveEvent, UpdateEvent, EntityManager } from 'typeorm';
+import {
+    EntitySubscriberInterface,
+    EventSubscriber,
+    InsertEvent,
+    RemoveEvent,
+    SoftRemoveEvent,
+    UpdateEvent,
+    EntityManager,
+    BaseEntity,
+} from 'typeorm';
 import { AuditingAction } from './decorator/auditing-entity.decorator';
+import { MetadataUtils } from 'typeorm/metadata-builder/MetadataUtils';
 
 @EventSubscriber()
 export class AuditingSubscriber implements EntitySubscriberInterface {
@@ -13,7 +23,11 @@ export class AuditingSubscriber implements EntitySubscriberInterface {
         const target = AuditingSubscriber.subscribers.find((item) => item.origin === entityType)?.target;
         if (!target) return;
 
-        await manager.save(target, { ...entity, _action: action });
+        // If target(audit entity) is a class that inherits from BaseEntity, instantiate it.
+        // Without this process, listeners such as @BeforeInsert do not work.
+        if (MetadataUtils.getInheritanceTree(target).includes(BaseEntity))
+            await manager.save((target as typeof BaseEntity).create({ ...entity, _action: action }));
+        else await manager.save(target, { ...entity, _action: action });
     }
 
     async afterInsert(event: InsertEvent<any>): Promise<any> {

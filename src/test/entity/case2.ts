@@ -1,4 +1,4 @@
-import { AfterLoad, BaseEntity, Column, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { AfterLoad, BaseEntity, BeforeInsert, Column, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { AuditingAction, AuditingEntity, AuditingEntityDefaultColumns } from '../../decorator/auditing-entity.decorator';
 
 abstract class MyBase1 {
@@ -59,7 +59,15 @@ export class Case2Audit extends BaseEntity implements AuditingEntityDefaultColum
     @Column({ nullable: true })
     additionalColumn!: string;
 
+    @Column({ nullable: true, type: 'varchar', length: 100 })
+    _modifiedBy!: string;
+
     id!: number;
     firstName!: string;
     lastName!: string;
+
+    @BeforeInsert()
+    storeModifiedBy() {
+        this._modifiedBy = `${this.firstName} ${this.lastName}`;
+    }
 }
