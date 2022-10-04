@@ -11,6 +11,8 @@ import {
 import { AuditingAction } from './decorator/auditing-entity.decorator';
 import { MetadataUtils } from 'typeorm/metadata-builder/MetadataUtils';
 
+type ClassType = { new (): any };
+
 @EventSubscriber()
 export class AuditingSubscriber implements EntitySubscriberInterface {
     private static subscribers: Array<{ origin: Function; target: Function }> = [];
@@ -27,7 +29,11 @@ export class AuditingSubscriber implements EntitySubscriberInterface {
         // Without this process, listeners such as @BeforeInsert do not work.
         if (MetadataUtils.getInheritanceTree(target).includes(BaseEntity))
             await manager.save((target as typeof BaseEntity).create({ ...entity, _action: action }));
-        else await manager.save(target, { ...entity, _action: action });
+        else {
+            const replica = new (target as any as ClassType)();
+            Object.assign(replica, { ...entity, _action: action });
+            await manager.save(target, replica);
+        }
     }
 
     async afterInsert(event: InsertEvent<any>): Promise<any> {

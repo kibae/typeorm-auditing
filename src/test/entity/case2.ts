@@ -51,7 +51,7 @@ export class ChildCase2 {
     //Set type to int for sqlite e2e test
     seqType: 'int',
 })
-export class Case2Audit extends BaseEntity implements AuditingEntityDefaultColumns {
+export class Case2Audit implements AuditingEntityDefaultColumns {
     readonly _seq!: number;
     readonly _action!: AuditingAction;
     readonly _modifiedAt!: Date;
