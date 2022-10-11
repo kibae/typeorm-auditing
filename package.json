@@ -1,6 +1,6 @@
 {
   "name": "typeorm-auditing",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "TypeORM Auditing: Create history tables and manage changes of entity automatically.",
   "homepage": "https://github.com/kibae/typeorm-auditing",
   "repository": {
@@ -13,7 +13,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "build": "tsc -p tsconfig.build.json",
-    "publish": "npm run build && npm publish --access public"
+    "publish": "rm -rf dist && npm run build && npm publish --access public"
   },
   "keywords": [
     "TypeORM",

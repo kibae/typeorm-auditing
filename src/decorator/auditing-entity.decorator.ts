@@ -5,6 +5,7 @@ import { TableMetadataArgs } from 'typeorm/metadata-args/TableMetadataArgs';
 import { MetadataUtils } from 'typeorm/metadata-builder/MetadataUtils';
 import { AuditingSubscriber } from '../auditing-subscriber';
 import { ColumnMode } from 'typeorm/metadata-args/types/ColumnMode';
+import { ColumnOptions } from 'typeorm/decorator/options/ColumnOptions';
 
 export enum AuditingAction {
     Create = 'Create',
@@ -80,23 +81,22 @@ export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLitera
             .filter((column) => inheritanceTree.includes(column.target as Function))
             .map((originColumn) => {
                 let { type, array } = originColumn.options || {};
-                const {
-                    name,
-                    length,
-                    hstoreType,
-                    enum: Enum,
-                    enumName,
-                    precision,
-                    scale,
-                    zerofill,
-                    comment,
-                    primary,
-                    charset,
-                    collation,
-                    unsigned,
-                    width,
-                    transformer,
-                } = originColumn.options || {};
+                const { primary, name, ...options } = (({
+                    // except
+                    type,
+                    array,
+                    nullable,
+                    generated,
+                    generatedType,
+                    generatedIdentity,
+                    asExpression,
+                    foreignKeyConstraintName,
+                    primaryKeyConstraintName,
+                    onUpdate,
+                    unique,
+                    //
+                    ...rest
+                }: ColumnOptions) => ({ ...rest }))(originColumn.options);
                 if (primary) pkList.push(originColumn.propertyName);
 
                 if (!type) {
@@ -109,25 +109,7 @@ export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLitera
                     target,
                     propertyName: originColumn.propertyName,
                     mode: originColumn.mode === 'array' ? 'array' : 'regular',
-                    options: {
-                        nullable: true,
-                        name,
-                        type,
-                        length,
-                        array,
-                        hstoreType,
-                        enum: Enum,
-                        enumName,
-                        precision,
-                        scale,
-                        zerofill,
-                        comment,
-                        charset,
-                        collation,
-                        unsigned,
-                        width,
-                        transformer,
-                    },
+                    options: { nullable: true, name, type, length, array, ...options },
                 });
             });
 
