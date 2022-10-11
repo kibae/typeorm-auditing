@@ -79,8 +79,9 @@ export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLitera
         metadata.columns
             .filter((column) => inheritanceTree.includes(column.target as Function))
             .map((originColumn) => {
-                let { type, array } = originColumn.options;
+                let { type, array } = originColumn.options || {};
                 const {
+                    name,
                     length,
                     hstoreType,
                     enum: Enum,
@@ -93,6 +94,8 @@ export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLitera
                     charset,
                     collation,
                     unsigned,
+                    width,
+                    transformer,
                 } = originColumn.options || {};
                 if (primary) pkList.push(originColumn.propertyName);
 
@@ -108,6 +111,7 @@ export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLitera
                     mode: originColumn.mode === 'array' ? 'array' : 'regular',
                     options: {
                         nullable: true,
+                        name,
                         type,
                         length,
                         array,
@@ -121,6 +125,8 @@ export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLitera
                         charset,
                         collation,
                         unsigned,
+                        width,
+                        transformer,
                     },
                 });
             });
