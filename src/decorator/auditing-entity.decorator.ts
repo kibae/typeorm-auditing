@@ -109,7 +109,7 @@ export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLitera
                     target,
                     propertyName: originColumn.propertyName,
                     mode: originColumn.mode === 'array' ? 'array' : 'regular',
-                    options: { nullable: true, name, type, length, array, ...options },
+                    options: { nullable: true, name, type, array, ...options },
                 });
             });
 
