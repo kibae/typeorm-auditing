@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, getMetadataArgsStorage, ObjectLiteral, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseEntity, Column, CreateDateColumn, getMetadataArgsStorage, ObjectLiteral, PrimaryGeneratedColumn } from 'typeorm';
 import { EntityOptions } from 'typeorm/decorator/options/EntityOptions';
 import { PrimaryGeneratedColumnType } from 'typeorm/driver/types/ColumnTypes';
 import { TableMetadataArgs } from 'typeorm/metadata-args/TableMetadataArgs';
@@ -31,7 +31,7 @@ export interface AuditingEntityOptions extends EntityOptions {
     seqType?: PrimaryGeneratedColumnType;
 }
 
-export abstract class AbstractAuditingBaseEntity implements AuditingEntityDefaultColumns {
+export abstract class AbstractAuditingBaseEntity extends BaseEntity implements AuditingEntityDefaultColumns {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     readonly _seq!: number;
 
@@ -53,12 +53,8 @@ export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLitera
         if (!origin) throw new Error('AuditingEntity: Cannot found origin entity from TypeORM metadata.');
         if (origin.type !== 'regular') throw new Error('AuditingEntity: Origin entity must be a regular entity type.');
 
-        let dummyInherited = false;
-        if (MetadataUtils.getInheritanceTree(target).includes(origin.target as Function)) {
-            //Break inheritance. Avoid inheritance of index and event definitions
-            Object.setPrototypeOf(target, AbstractAuditingBaseEntity);
-            dummyInherited = true;
-        }
+        //Break inheritance. Avoid inheritance of index and event definitions
+        Object.setPrototypeOf(target, AbstractAuditingBaseEntity);
 
         //create table
         metadata.tables.push({
@@ -73,13 +69,14 @@ export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLitera
             withoutRowid: entityOptions.withoutRowid,
         } as TableMetadataArgs);
 
-        const inheritanceTree = MetadataUtils.getInheritanceTree(origin.target as Function);
+        const originInheritanceTree = MetadataUtils.getInheritanceTree(origin.target as Function);
+
         const pkList: string[] = [];
 
         //import columns of origin table
         metadata.columns
-            .filter((column) => inheritanceTree.includes(column.target as Function))
-            .map((originColumn) => {
+            .filter((column) => originInheritanceTree.includes(column.target as Function))
+            .forEach((originColumn) => {
                 let { type, array } = originColumn.options || {};
                 const { primary, name, ...options } = (({
                     // except
@@ -112,7 +109,6 @@ export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLitera
                     options: { nullable: true, name, type, array, ...options },
                 });
             });
-
         //generate index for origin PKs
         if (pkList.length > 0)
             metadata.indices.push({
@@ -120,39 +116,53 @@ export function AuditingEntity<T extends ObjectLiteral>(entityType: ObjectLitera
                 columns: pkList,
             });
 
-        //If the dummy class is not inherited, columns for history should be created.
-        if (!dummyInherited) {
-            //_seq
-            metadata.columns.push({
-                target,
-                propertyName: '_seq',
-                mode: 'regular',
-                options: { type: seqType || 'bigint', primary: true },
+        //relations
+        metadata.relations
+            .filter((rel) => originInheritanceTree.includes(rel.target as Function))
+            .forEach((rel) => {
+                metadata.relations.push({
+                    ...rel,
+                    target,
+                    options: {
+                        ...rel.options,
+                        onUpdate: undefined,
+                        onDelete: undefined,
+                        cascade: undefined,
+                        createForeignKeyConstraints: false,
+                        orphanedRowAction: undefined,
+                    },
+                });
             });
-            metadata.generations.push({ target, propertyName: '_seq', strategy: 'increment' });
 
-            //_action
-            metadata.columns.push({
-                target,
-                propertyName: '_action',
-                mode: 'regular',
-                options: { type: 'varchar', length: 20 },
+        //join columns
+        metadata.joinColumns
+            .filter((joinColumn) => originInheritanceTree.includes(joinColumn.target as Function))
+            .forEach((joinColumn) => {
+                metadata.joinColumns.push({
+                    ...joinColumn,
+                    target,
+                });
             });
 
-            //_modifiedAt
-            metadata.columns.push({ target, propertyName: '_modifiedAt', mode: 'createDate', options: {} });
-        } else if (seqType && seqType !== 'bigint') {
-            //The type of *_seq* column can be specified.
+        //_seq
+        metadata.columns.push({
+            target,
+            propertyName: '_seq',
+            mode: 'regular',
+            options: { type: seqType || 'bigint', primary: true },
+        });
+        metadata.generations.push({ target, propertyName: '_seq', strategy: 'increment' });
 
-            //_seq
-            metadata.columns.unshift({
-                target,
-                propertyName: '_seq',
-                mode: 'regular',
-                options: { type: seqType, primary: true },
-            });
-            metadata.generations.push({ target, propertyName: '_seq', strategy: 'increment' });
-        }
+        //_action
+        metadata.columns.push({
+            target,
+            propertyName: '_action',
+            mode: 'regular',
+            options: { type: 'varchar', length: 20 },
+        });
+
+        //_modifiedAt
+        metadata.columns.push({ target, propertyName: '_modifiedAt', mode: 'createDate', options: {} });
 
         //entityListeners
         AuditingSubscriber.Subscribe(origin.target as Function, target);

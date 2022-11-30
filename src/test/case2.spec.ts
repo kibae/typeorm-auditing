@@ -1,82 +1,19 @@
 import { AuditingAction } from '../decorator/auditing-entity.decorator';
-import { DataSource, In } from 'typeorm';
-import { Case1, Case1Audit } from './entity/case1';
+import { testConnection } from './test-common';
 import { Case2, Case2Audit, ChildCase2 } from './entity/case2';
-import { AuditingSubscriber } from '../auditing-subscriber';
+import { In } from 'typeorm';
 
-async function connection(entities: any[]): Promise<DataSource> {
-    return await new DataSource({
-        type: 'mysql',
-        port: 53306,
-        database: 'playground',
-        username: 'root',
-        password: 'local',
-        synchronize: true,
-        logging: 'all',
-        entities,
-        subscribers: [AuditingSubscriber],
-    }).initialize();
-}
-
-describe('AuditingEntity - E2E', () => {
-    beforeAll(async () => {
-        const dataSource = await connection([Case1, Case1Audit, Case2, Case2Audit, ChildCase2]);
-        await dataSource.query(`DELETE FROM case1_audit`);
-        await dataSource.query(`DELETE FROM case1`);
-        await dataSource.query(`DELETE FROM child_case2`);
-        await dataSource.query(`DELETE FROM case2_audit`);
-        await dataSource.query(`DELETE FROM case2`);
-        await dataSource.destroy();
-    });
-
-    it('Case1(Inheritance) - CUD', async () => {
-        const dataSource = await connection([Case1, Case1Audit]);
-
-        const dummyDate = new Date('2000-01-01');
-        const entity = await dataSource.manager.save(
-            Case1.create({
-                firstName: 'Timber',
-                lastName: 'Saw',
-                age: 25,
-                createdAt: dummyDate,
-                updatedAt: dummyDate,
-                deletedAt: dummyDate,
-            } as Case1)
-        );
-        expect(entity).toBeDefined();
-
-        //Create
-        const created = await dataSource.manager.find(Case1Audit);
-        expect(created).toBeDefined();
-        expect(created.length).toBeGreaterThan(0);
-        expect(created[0]._action).toBe(AuditingAction.Create);
-        expect(created[0].id).toBe(entity.id);
-
-        //Update
-        entity.age++;
-        await entity.save();
-
-        const updated = await dataSource.manager.find(Case1Audit, { where: { _action: AuditingAction.Update } });
-        expect(updated).toBeDefined();
-        expect(updated.length).toBeGreaterThan(0);
-        expect(updated[0]._action).toBe(AuditingAction.Update);
-        expect(updated[0].id).toBe(entity.id);
-        console.log(updated);
-
-        //Delete
-        const originId = entity.id;
-        await entity.remove();
-        const deleted = await dataSource.manager.find(Case1Audit, { where: { _action: AuditingAction.Delete } });
-        expect(deleted).toBeDefined();
-        expect(deleted.length).toBeGreaterThan(0);
-        expect(deleted[0]._action).toBe(AuditingAction.Delete);
-        expect(deleted[0].id).toBe(originId);
-
+describe('AuditingEntity - Case2', () => {
+    beforeEach(async () => {
+        const dataSource = await testConnection([]);
+        await dataSource.query(`DROP TABLE IF EXISTS child_case2 CASCADE`);
+        await dataSource.query(`DROP TABLE IF EXISTS case2_audit CASCADE`);
+        await dataSource.query(`DROP TABLE IF EXISTS case2 CASCADE`);
         await dataSource.destroy();
     });
 
     it('Case2(Not inherited + ObjectLiteral + Partial) - CUD', async () => {
-        const dataSource = await connection([ChildCase2, Case2, Case2Audit]);
+        const dataSource = await testConnection([ChildCase2, Case2, Case2Audit]);
 
         const entity = new Case2();
         entity.firstName = 'Timber';
@@ -115,8 +52,8 @@ describe('AuditingEntity - E2E', () => {
         await dataSource.destroy();
     });
 
-    it('Case3(Not inherited + ObjectLiteral + Partial) - ObjectLiteral', async () => {
-        const dataSource = await connection([ChildCase2, Case2, Case2Audit]);
+    it('Case2(Not inherited + ObjectLiteral + Partial) - ObjectLiteral', async () => {
+        const dataSource = await testConnection([ChildCase2, Case2, Case2Audit]);
 
         const entities = await dataSource.getRepository(Case2).save([
             {
