@@ -31,7 +31,7 @@ export interface AuditingEntityOptions extends EntityOptions {
     seqType?: PrimaryGeneratedColumnType;
 }
 
-export abstract class AbstractAuditingBaseEntity extends BaseEntity implements AuditingEntityDefaultColumns {
+export abstract class AbstractAuditingBaseEntity implements AuditingEntityDefaultColumns {
     @PrimaryGeneratedColumn({ type: 'bigint' })
     readonly _seq!: number;
 
