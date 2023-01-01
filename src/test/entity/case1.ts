@@ -43,6 +43,9 @@ export class Case1 extends MyBase2 {
     })
     gender!: Gender;
 
+    @Column({ default: true })
+    status!: boolean;
+
     @CreateDateColumn()
     createdAt!: Date;
 

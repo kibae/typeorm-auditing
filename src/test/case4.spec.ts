@@ -23,12 +23,14 @@ describe('AuditingEntity - Case4', () => {
                 lastName: 'Saw',
                 age: 25,
                 parent: parents[0],
+                status: true,
             },
             {
                 firstName: 'Timber2',
                 lastName: 'Saw',
                 age: 26,
                 parent: parents[1],
+                status: false,
             },
             {
                 firstName: 'Timber3',
@@ -52,10 +54,13 @@ describe('AuditingEntity - Case4', () => {
         expect(created[0]._action).toBe(AuditingAction.Create);
         expect(created[0].id).toBe(entities[0].id);
         expect(created[0].parent.id).toBe(entities[0].parent.id);
+        expect(created[0].status).toBe(true);
         expect(created[1].id).toBe(entities[1].id);
         expect(created[1].parent.id).toBe(entities[1].parent.id);
+        expect(created[1].status).toBe(false);
         expect(created[2].id).toBe(entities[2].id);
         expect(created[2].parent.id).toBe(entities[2].parent.id);
+        expect(created[2].status).toBe(true);
 
         await dataSource.destroy();
     });

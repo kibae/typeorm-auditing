@@ -22,6 +22,7 @@ describe('AuditingEntity - Case1', () => {
                 createdAt: dummyDate,
                 updatedAt: dummyDate,
                 deletedAt: dummyDate,
+                status: false,
             } as Case1)
         );
         expect(entity).toBeDefined();
@@ -32,6 +33,7 @@ describe('AuditingEntity - Case1', () => {
         expect(created.length).toBeGreaterThan(0);
         expect(created[0]._action).toBe(AuditingAction.Create);
         expect(created[0].id).toBe(entity.id);
+        expect(created[0].status).toBe(false);
 
         //Update
         entity.age++;

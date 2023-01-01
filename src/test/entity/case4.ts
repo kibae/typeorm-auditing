@@ -30,6 +30,9 @@ export class Case4 extends Case4Base {
 
     @Column()
     age!: number;
+
+    @Column({ default: true })
+    status!: boolean;
 }
 
 @AuditingEntity(Case4, {
@@ -46,6 +49,7 @@ export class Case4Audit implements AuditingEntityDefaultColumns {
     firstName!: string;
     lastName!: string;
     age!: number;
+    status!: boolean;
 
     @Column({ nullable: true })
     additionalColumn!: string;
