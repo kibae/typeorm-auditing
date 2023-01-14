@@ -42,7 +42,7 @@ describe('AuditingEntity - Case3', () => {
 
         //Create
         const created = await dataSource.manager.find(Case3Audit, {
-            where: { firstName: In(['Timber1', 'Timber2', 'Timber3']) },
+            where: { _action: AuditingAction.Create, firstName: In(['Timber1', 'Timber2', 'Timber3']) },
             order: { _seq: 'ASC' },
             relations: ['parent'],
         });
@@ -56,6 +56,18 @@ describe('AuditingEntity - Case3', () => {
         expect(created[1].parent.id).toBe(entities[1].parent.id);
         expect(created[2].id).toBe(entities[2].id);
         expect(created[2].parent.id).toBe(entities[2].parent.id);
+
+        //Update
+        entities[0].age = 100;
+        await dataSource.getRepository(Case3).save(entities[0]);
+        const updated = await dataSource.manager.find(Case3Audit, {
+            where: { _action: AuditingAction.Update, id: entities[0].id },
+            relations: ['parent'],
+        });
+        console.log(updated);
+        expect(updated[0].id).toBe(entities[0].id);
+        expect(updated[0].age).toBe(100);
+        expect(updated[0].parent.id).toBe(entities[0].parent.id);
 
         await dataSource.destroy();
     });
